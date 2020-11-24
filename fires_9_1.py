@@ -1,58 +1,43 @@
 import json
 
-in_file = open('US_fires_9_1.json','r')
+infile = open('US_fires_9_1.json','r')
+outfile = open('fires_9_1.json','w')
 
-out_file = open('US_fires_9_1.json','w')
+fire_data = json.load(infile)
 
-eq_data = json.load(in_file)
+json.dump(fire_data, outfile, indent=4)
 
-#json.dump(eq_data,out_file, indent=4)
+brightness = []
+lats = []
+lons = []
 
-#list_of_eqs = eq_data['features']
-
-#print(type(list_of_eqs))
-
-#print(len(list_of_eqs))
-
-mags,lons,lats = [],[],[]
-
-for eq in list_of_eqs:
-    mag = eq['properties']['mag']
-    lon = eq['geometry'] ['coordinates'] [0]
-    lat = eq['geometry'] ['coordinates'] [0]
-    mags.append(mag)
-    lons.append(lon)
-    lats.append(lats)
-
-print ('Mags')
-print(mags[:10])
-
-print('Lons')
-print(lons[:10])
-
-print("Lats")
-print(lats[:10])
+for fire in fire_data:
+    bright = fire['brightness']
+    lat = fire['latitude']
+    lon = fire['longitude']
+    if(bright > 450):
+        brightness.append(bright)
+        lats.append(lat)
+        lons.append(lon)
 
 
-
-from plotly.graph_objs import Scattergeo, Layout
+from plotly.graph_objects import Scattergeo, Layout
 from plotly import offline
 
-#data = [Scattergeo(lon=lons,lat=lats)]
 data = [{
     'type': 'scattergeo',
-    'lon': lons,
-    'lat': lats,
+    'lon' : lons,
+    'lat' : lats,
     'marker': {
-        #'size' :[5*mag for mag in mags],
-        'color': mags,
-    },
-
+        'size': 15,
+        'color': brightness,
+        'colorscale': 'Viridis',
+        'reversescale': True,
+        'colorbar' : {'title':'Brightness'},
+    }
+    
 }]
+myLayout = Layout(title="California Fires from 9/1-9/13")
+fig = {'data':data, 'layout':myLayout}
 
-my_layout = Layout(title='Global Earthquakes')
-
-fig = {'data' :data, 'layout':my_layout}
-
-offline.plot(fig, filename='global_earthquakes.html')
-
+offline.plot(fig, filename='calif_fires_9_1.html')
